@@ -40,10 +40,10 @@ static void recording_help(void) {
     printf("Usage: galaxyctl recording [action]\n\n");
     printf("Manages the 'Recording Block' firmware attribute.\n\n");
     printf("Actions:\n");
-    printf("  (none)     Show the current status of 'Recording Block'\n");
-    printf("  block      Block recording, disabling the webcam\n");
-    printf("  unblock    Unblock recording, enabling the webcam\n");
-    printf("  toggle     Toggle 'Recording Block'\n");
+    printf("    (none)     Show the current status of 'Recording Block'\n");
+    printf("    block      Block recording, disabling the webcam\n");
+    printf("    unblock    Unblock recording, enabling the webcam\n");
+    printf("    toggle     Toggle 'Recording Block'\n");
     printf("\n");
     printf("block, unblock and toggle require sudo.\n");
 }

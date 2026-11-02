@@ -4,6 +4,7 @@ OUTDIR   := output
 
 PREFIX   ?= /usr/local
 BINDIR   ?= $(PREFIX)/bin
+BASHCOMPDIR ?= $(PREFIX)/share/bash-completion/completions
 
 CC       ?= cc
 CFLAGS   ?= -O2 -g
@@ -29,9 +30,11 @@ $(BUILDDIR)/%.o: src/%.c
 
 install: $(OUTDIR)/$(BIN)
 	install -Dm755 $(OUTDIR)/$(BIN) $(DESTDIR)$(BINDIR)/$(BIN)
+	install -Dm644 completions/$(BIN).bash $(DESTDIR)$(BASHCOMPDIR)/$(BIN)
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/$(BIN)
+	rm -f $(DESTDIR)$(BASHCOMPDIR)/$(BIN)
 
 clean:
 	rm -rf $(BUILDDIR) $(OUTDIR)

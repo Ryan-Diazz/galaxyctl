@@ -39,10 +39,10 @@ static void help(void) {
     printf("Usage: galaxyctl powerlid [action]\n\n");
     printf("Manages the 'Power On Lid Open' firmware attribute.\n\n");
     printf("Actions:\n");
-    printf("  (none)     Show the current status of 'Power On Lid Open'\n");
-    printf("  enable     Power on the laptop when the lid is opened\n");
-    printf("  disable    Do now power on the laptop when the lid is opened");
-    printf("  toggle     Toggle 'Power On Lid Open'\n");
+    printf("    (none)     Show the current status of 'Power On Lid Open'\n");
+    printf("    enable     Power on the laptop when the lid is opened\n");
+    printf("    disable    Do now power on the laptop when the lid is opened\n");
+    printf("    toggle     Toggle 'Power On Lid Open'\n");
     printf("\n");
     printf("enable, disable and toggle require sudo.\n");
 }

@@ -13,6 +13,8 @@ add_executable(galaxyctl
         src/commands/powerlid/powerlid.h
         src/commands/recording/recording.c
         src/commands/recording/recording.h
+        src/commands/profile/profile.c
+        src/commands/profile/profile.h
         src/commands/sysfs.c
         src/commands/sysfs.h
         src/main.c)
