@@ -15,6 +15,8 @@ add_executable(galaxyctl
         src/commands/recording/recording.h
         src/commands/profile/profile.c
         src/commands/profile/profile.h
+        src/commands/battery/battery.c
+        src/commands/battery/battery.h
         src/commands/sysfs.c
         src/commands/sysfs.h
         src/main.c)

@@ -5,6 +5,7 @@
 #include "recording/recording.h"
 #include "powerlid/powerlid.h"
 #include "profile/profile.h"
+#include "battery/battery.h"
 
 int commands_dispatch(int argc, char *argv[]) {
     const char *action = argv[0];
@@ -18,10 +19,10 @@ int commands_dispatch(int argc, char *argv[]) {
     if (strcmp(argv[0], "profile") == 0)
         return profile_command(argc - 1, argv + 1);
 
+    if (strcmp(argv[0], "battery") == 0)
+        return battery_command(argc - 1, argv + 1);
+
     // TODO: enable once implemented
-    // if (strcmp(argv[0], "battery") == 0)
-    //     return battery_command(argc - 1, argv + 1);
-    //
     // if (strcmp(argv[0], "kb-light") == 0)
     //     return keyboard_command(argc - 1, argv + 1);
 
@@ -42,6 +43,7 @@ void commands_help() {
     printf("    recording    Manage 'Block Recording' (webcam)\n");
     printf("    powerlid     Manage 'Power On Lid Open'\n");
     printf("    profile      Manage the 'Power Profile'\n");
+    printf("    battery      Battery health and charge limit\n");
     printf("\n");
     printf("Run 'galaxyctl <command> help' for the actions of a command.\n");
 }
