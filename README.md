@@ -65,12 +65,64 @@ Manage power profile through cli (becaus linux mint doesn't show low-power (fan 
 
 ## Installation
 
-### 1. Download the '*.deb' from the latest release
+`galaxyctl` requires Linux 6.15 or newer with the `samsung-galaxybook` driver loaded. Check with:
 
-   Navigate to the [Latest release](https://github.com/Ryan-Diazz/GalaxyBook-Firmware-Driver-CLI/releases/latest), From there download the latest `galaxybook-firmware-driver-cli_x.x.x_all.deb` file
+```bash
+lsmod | grep samsung_galaxybook
+```
+
+Ready-made packages for Debian/Ubuntu/Linux Mint and Arch Linux are attached to every [release](https://github.com/Ryan-Diazz/galaxyctl/releases). Bash tab completion is included in both packages.
+
+### Debian / Ubuntu / Linux Mint
+
+1. Download `galaxyctl_<version>_amd64.deb` from the [latest release](https://github.com/Ryan-Diazz/galaxyctl/releases/latest).
+2. Install it:
+
+   ```bash
+   sudo apt install ./galaxyctl_<version>_amd64.deb
+   ```
+
+To uninstall, run `sudo apt remove galaxyctl`.
+
+### Arch Linux
+
+1. Download `galaxyctl-<version>-1-x86_64.pkg.tar.zst` from the [latest release](https://github.com/Ryan-Diazz/galaxyctl/releases/latest).
+2. Install it:
+
+   ```bash
+   sudo pacman -U galaxyctl-<version>-1-x86_64.pkg.tar.zst
+   ```
+
+To uninstall, run `sudo pacman -R galaxyctl`.
+
+### Building it yourself
+
+You only need `make` and a C compiler (`gcc` or `clang`):
+
+```bash
+# Debian / Ubuntu / Linux Mint
+sudo apt install build-essential git
+# Arch Linux
+sudo pacman -S --needed base-devel git
+```
+
+Then clone, build and install:
+
+```bash
+git clone https://github.com/Ryan-Diazz/galaxyctl.git
+cd galaxyctl
+make all
+sudo make install
+```
+
+This installs the binary to `/usr/local/bin/galaxyctl` and the bash completion to `/usr/local/share/bash-completion/completions/galaxyctl`. Open a new terminal for tab completion to work.
+
+- Install somewhere else with `sudo make install PREFIX=/usr`.
+- Uninstall with `sudo make uninstall`, using the same `PREFIX` if you changed it.
+- Run it without installing with `./output/galaxyctl`.
 
 # License
-This project is licensed under the terms of the MIT license. check the [LICENCE](https://github.com/Ryan-Diazz/GalaxyBook-Firmware-Driver-CLI/blob/main/LICENCE) File for more information
+This project is licensed under the terms of the MIT license. check the [LICENCE](LICENCE) File for more information
 
 # About
 my [original](https://github.com/Ryan-Diazz/GalaxyBook-Firmware-Driver-CLI) version was written in python. Which i didn't really like. So now it is in c :p

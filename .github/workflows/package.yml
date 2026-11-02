@@ -1,0 +1,142 @@
+name: Package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Never compute two versions for main at the same time
+concurrency:
+  group: package-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.next.outputs.version }}
+      deb_version: ${{ steps.pkg.outputs.deb_version }}
+      arch_version: ${{ steps.pkg.outputs.arch_version }}
+      release: ${{ steps.pkg.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history and tags for versioning
+
+      - id: next
+        run: bash scripts/next-version.sh | tee -a "$GITHUB_OUTPUT"
+
+      - id: pkg
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+          BUMP: ${{ steps.next.outputs.bump }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [[ $GITHUB_EVENT_NAME == pull_request ]]; then
+            # Pre-release versions that sort before the real release
+            sha=${GITHUB_SHA::7}
+            echo "deb_version=${VERSION}~pr${PR}.${sha}" >> "$GITHUB_OUTPUT"
+            echo "arch_version=${VERSION}pre.pr${PR}.${sha}" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deb_version=${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "arch_version=${VERSION}" >> "$GITHUB_OUTPUT"
+            [[ $BUMP != none ]] && release=true || release=false
+            echo "release=$release" >> "$GITHUB_OUTPUT"
+          fi
+
+  deb:
+    needs: version
+    runs-on: ubuntu-latest
+    # Debian stable's glibc keeps the package installable on older Ubuntu/Mint
+    container: debian:bookworm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential dpkg-dev
+
+      - name: Build .deb
+        run: bash packaging/deb/build.sh "${{ needs.version.outputs.deb_version }}" dist
+
+      - name: Test install
+        run: |
+          apt-get install -y ./dist/*.deb
+          galaxyctl help
+          dpkg -L galaxyctl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb
+          path: dist/*.deb
+          if-no-files-found: error
+
+  arch:
+    needs: version
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build package
+        env:
+          PKGVER: ${{ needs.version.outputs.arch_version }}
+        run: |
+          pacman -Syu --noconfirm --needed git
+
+          # makepkg refuses to run as root
+          useradd -m builder
+          work=/home/builder/pkg
+          mkdir -p "$work"
+          cp packaging/arch/PKGBUILD "$work/"
+          sed -i "s/^pkgver=.*/pkgver=$PKGVER/" "$work/PKGBUILD"
+          tar --exclude=.git --exclude=build --exclude=output \
+              --transform "s|^\.|galaxyctl-$PKGVER|" \
+              -czf "$work/galaxyctl-$PKGVER.tar.gz" .
+          chown -R builder: "$work"
+
+          su builder -c "cd $work && makepkg --noconfirm"
+
+          mkdir -p dist
+          cp "$work"/*.pkg.tar.zst dist/
+
+      - name: Test install
+        run: |
+          pacman -U --noconfirm dist/*.pkg.tar.zst
+          galaxyctl help
+          pacman -Ql galaxyctl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arch
+          path: dist/*.pkg.tar.zst
+          if-no-files-found: error
+
+  release:
+    needs: [version, deb, arch]
+    if: github.event_name == 'push' && needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ needs.version.outputs.version }}
+        run: |
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --generate-notes

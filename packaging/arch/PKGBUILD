@@ -1,0 +1,30 @@
+# Maintainer: Ryan-Diazz <https://github.com/Ryan-Diazz/galaxyctl>
+#
+# Builds from a source tarball named galaxyctl-$pkgver.tar.gz next to this file.
+# CI sets pkgver and creates the tarball; locally:
+#   git archive --prefix=galaxyctl-0.0.0/ -o packaging/arch/galaxyctl-0.0.0.tar.gz HEAD
+#   (cd packaging/arch && makepkg -f)
+
+pkgname=galaxyctl
+pkgver=0.0.0
+pkgrel=1
+pkgdesc="Control Samsung Galaxy Book firmware features (samsung-galaxybook driver)"
+arch=('x86_64')
+url="https://github.com/Ryan-Diazz/galaxyctl"
+license=('MIT')
+depends=('glibc')
+optdepends=('bash-completion: tab completion for galaxyctl')
+options=('!debug')
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname-$pkgver"
+    make
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    make install DESTDIR="$pkgdir" PREFIX=/usr
+    install -Dm644 LICENCE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
